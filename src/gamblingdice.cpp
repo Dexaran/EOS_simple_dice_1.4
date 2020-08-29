@@ -38,6 +38,24 @@ ACTION gamblingdice::createroom(name player1, asset stake, uint64_t id) {
   require_auth(player1);
 
   auto itr = _rooms.find(id);
+  check(itr == _rooms.end(), "The room already exists!");
+
+  _rooms.emplace(get_self(), [&](auto &new_room) {
+      new_room.player1 = player1;
+      new_room.stake   = stake;
+      new_room.id      = id;
+    });
+}
+
+[[eosio::on_notify("eosio.token::transfer")]]
+void deposit(name from, name to, asset quantity, std::string memo) {
+  // Memo format:
+  // "room-12 entropy-62024e873202aff4a0466515bfd68208fd1e4353be57d65f032d184f4b24c921"
+  // where `room`-`<number>` is the `id` of a room players wants to play at
+  //       `entropy`-`sha3_hash(<number>)` is a sha3 hash of the number that is used as entropy
+
+  //checksum256 _hash = sha256(memo, 128);
+
 }
 
 EOSIO_DISPATCH(gamblingdice, (hi)(clear)(createroom))
