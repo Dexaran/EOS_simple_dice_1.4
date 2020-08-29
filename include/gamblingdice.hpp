@@ -1,5 +1,6 @@
 #include <eosio/eosio.hpp>
 #include <eosio/asset.hpp>
+#include <eosio/crypto.hpp>
 
 using namespace std;
 using namespace eosio;
@@ -31,6 +32,8 @@ CONTRACT gamblingdice : public contract {
       uint64_t id;
       name    player1;
       name    player2;
+
+
       //eosio::asset   stake_test_delaration;
       //eosio::asset(0, symbol(symbol_code("SYS"),4)) stake; // Breaking change 1.2.x ->> 1.3.x
       asset   stake;
