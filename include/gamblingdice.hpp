@@ -1,6 +1,7 @@
 #include <eosio/eosio.hpp>
 #include <eosio/asset.hpp>
 #include <eosio/crypto.hpp>
+#include <eosio/singleton.hpp>
 
 using namespace std;
 using namespace eosio;
@@ -14,12 +15,22 @@ CONTRACT gamblingdice : public contract {
          contract(receiver, code, ds),
          // instantiate multi index instance as data member (find it defined below)
          _rooms(receiver, receiver.value),
-         _messages(receiver, receiver.value)
+         _messages(receiver, receiver.value),
+         _debugtable(receiver, receiver.value)
          { }
 
     ACTION hi(name from, std::string message);
     ACTION clear();
     ACTION createroom(name player1, asset stake, uint64_t id);
+
+    TABLE debugtable {
+         name primary_value;
+         uint64_t secondary_value;
+         uint64_t primary_key() const { return primary_value.value; }
+      } debugtable;
+
+      using singleton_type = eosio::singleton<"debugtable"_n, debugtable>;
+      singleton_type _debugtable;
 
     TABLE messages {
       name    user;
@@ -33,6 +44,8 @@ CONTRACT gamblingdice : public contract {
       name    player1;
       name    player2;
 
+      checksum256 entropy1;
+      checksum256 entropy2;
 
       //eosio::asset   stake_test_delaration;
       //eosio::asset(0, symbol(symbol_code("SYS"),4)) stake; // Breaking change 1.2.x ->> 1.3.x
