@@ -16,21 +16,24 @@ CONTRACT gamblingdice : public contract {
          // instantiate multi index instance as data member (find it defined below)
          _rooms(receiver, receiver.value),
          _messages(receiver, receiver.value),
-         _debugtable(receiver, receiver.value)
-         { }
+         singleton_debug(receiver, receiver.value)
+         {}
 
     ACTION hi(name from, std::string message);
     ACTION clear();
     ACTION createroom(name player1, asset stake, uint64_t id);
+    void   deposit(name from, name to, asset quantity, std::string memo);
 
-    TABLE debugtable {
-         name primary_value;
-         uint64_t secondary_value;
-         uint64_t primary_key() const { return primary_value.value; }
-      } debugtable;
+      struct [[eosio::table]] testtable {
+         uint64_t    primary_identifier;
+         uint64_t    debug_uint1;
+         checksum256 debug_checksum1;
+         std::string debug_string1;
+         uint64_t    primary_key() const { return primary_identifier; }
+      } tt;
 
-      using singleton_type = eosio::singleton<"debugtable"_n, debugtable>;
-      singleton_type _debugtable;
+      using singleton_type = eosio::singleton<"testtable"_n, testtable>;
+      singleton_type singleton_debug;
 
     TABLE messages {
       name    user;
