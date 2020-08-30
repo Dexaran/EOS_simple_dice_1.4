@@ -1,5 +1,7 @@
 #include <gamblingdice.hpp>
 
+//using namespace gamblingdice;
+
 ACTION gamblingdice::hi(name from, string message) {
   require_auth(from);
 
@@ -48,7 +50,7 @@ ACTION gamblingdice::createroom(name player1, asset stake, uint64_t id) {
 }
 
 [[eosio::on_notify("eosio.token::transfer")]]
-void deposit(name from, name to, asset quantity, std::string memo) {
+void gamblingdice::deposit(name from, name to, asset quantity, std::string memo) {
   // Memo format:
   // "12;62024e873202aff4a0466515bfd68208fd1e4353be57d65f032d184f4b24c921"
   // where the first number before `;` delimiter is the `id` of a room players wants to play at
@@ -57,6 +59,12 @@ void deposit(name from, name to, asset quantity, std::string memo) {
   //checksum256 _hash = sha256(memo, 128);
 
   checksum256 _hash = sha256(memo.c_str(), sizeof(memo));
+
+
+  if (!singleton_debug.exists())
+   {
+      singleton_debug.get_or_create(from, tt);
+   }
 
   std::string user_input = memo;
 
@@ -74,7 +82,10 @@ void deposit(name from, name to, asset quantity, std::string memo) {
   eosio::print("room_id", room_id);
   eosio::print("entropy_hash", entropy_hash);
 
-  
+
+  auto entry_stored          = singleton_debug.get();
+  entry_stored.debug_string1 = entropy_hash;
+  singleton_debug.set(entry_stored, from);
 }
 
 EOSIO_DISPATCH(gamblingdice, (hi)(clear)(createroom))
