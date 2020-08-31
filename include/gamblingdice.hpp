@@ -18,11 +18,14 @@ CONTRACT gamblingdice : public contract {
          _messages(receiver, receiver.value),
          singleton_debug(receiver, receiver.value)
          {}
+         
 
-    ACTION hi(name from, std::string message);
+    ACTION hi(name from, name to, eosio::asset quantity, string message);
     ACTION clear();
     ACTION createroom(name player1, asset stake, uint64_t id);
-    void   deposit(name from, name to, asset quantity, std::string memo);
+
+    void deposit(const name from, const name to, const asset quantity, const std::string memo);
+    void received(const eosio::name caller, eosio::name receiver, eosio::asset value, std::string memo);
 
       struct [[eosio::table]] testtable {
          uint64_t    primary_identifier;
