@@ -2,8 +2,8 @@
 
 //using namespace gamblingdice;
 
-ACTION gamblingdice::hi(name from, string message) {
-  require_auth(from);
+ACTION gamblingdice::hi(const eosio::name from, eosio::name to, eosio::asset quantity, std::string message) {
+  //require_auth(from);
 
   // Init the _message table
   messages_table _messages(get_self(), get_self().value);
@@ -49,8 +49,17 @@ ACTION gamblingdice::createroom(name player1, asset stake, uint64_t id) {
     });
 }
 
-[[eosio::on_notify("eosio.token::transfer")]]
-void gamblingdice::deposit(name from, name to, asset quantity, std::string memo) {
+[[eosio::on_notify("eosio.token::transfer")]] void gamblingdice::received(const eosio::name caller, eosio::name receiver, eosio::asset value, std::string memo) {
+
+ 
+_messages.emplace(get_self(), [&](auto& msg) {
+      msg.user = caller;
+      msg.text = memo;
+    });
+    
+}
+
+void gamblingdice::deposit(const name from, const name to, const asset quantity, const std::string memo) {
   // Memo format:
   // "12;62024e873202aff4a0466515bfd68208fd1e4353be57d65f032d184f4b24c921"
   // where the first number before `;` delimiter is the `id` of a room players wants to play at
@@ -60,6 +69,10 @@ void gamblingdice::deposit(name from, name to, asset quantity, std::string memo)
 
   checksum256 _hash = sha256(memo.c_str(), sizeof(memo));
 
+  _messages.emplace(from, [&](auto& msg) {
+      msg.user = from;
+      msg.text = memo;
+    });
 
   if (!singleton_debug.exists())
    {
@@ -88,4 +101,4 @@ void gamblingdice::deposit(name from, name to, asset quantity, std::string memo)
   singleton_debug.set(entry_stored, from);
 }
 
-EOSIO_DISPATCH(gamblingdice, (hi)(clear)(createroom))
+//EOSIO_DISPATCH(gamblingdice, (hi)(clear)(createroom))
