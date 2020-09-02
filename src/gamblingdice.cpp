@@ -2,6 +2,24 @@
 
 //using namespace gamblingdice;
 
+template<typename CharT>
+static std::string to_hex(const CharT* d, uint32_t s) {
+  std::string r;
+  const char* to_hex="0123456789abcdef";
+  uint8_t* c = (uint8_t*)d;
+  for( uint32_t i = 0; i < s; ++i ) {
+    (r += to_hex[(c[i] >> 4)]) += to_hex[(c[i] & 0x0f)];
+  }
+  return r;
+}
+
+static std::string to_sha256_string(std::string str) {
+  checksum256 digest;
+  digest = sha256(&str[0], str.size());
+
+  return to_hex(&digest, sizeof(digest));
+}
+
 ACTION gamblingdice::hi(const eosio::name from, eosio::name to, eosio::asset quantity, std::string message) {
   //require_auth(from);
 
@@ -57,12 +75,17 @@ ACTION gamblingdice::createroom(name player1, asset stake, uint64_t id) {
 
   //checksum256 _hash = sha256(memo, 128);
 
-  checksum256 _hash = sha256(memo.c_str(), sizeof(memo));
+  std::string _test_str = "100";
 
+  checksum256 _hash = sha256(&_test_str[0], _test_str.size());
+  std::string _hashString = to_sha256_string("100");
+
+/*
   _messages.emplace(get_self(), [&](auto& msg) {
       msg.user = from;
       msg.text = memo;
     });
+*/
 
   if (!singleton_debug.exists())
    {
@@ -82,12 +105,23 @@ ACTION gamblingdice::createroom(name player1, asset stake, uint64_t id) {
   pos = user_input.find(delimiter);
   entropy_hash = user_input.substr(0, pos);
 
-  eosio::print("room_id", room_id);
-  eosio::print("entropy_hash", entropy_hash);
+  // ######################################
+  // ASSIGN DEBUG VARIABLES
+  //
 
+  auto entry_stored            = singleton_debug.get();
+  entry_stored.debug_string1   = _hashString;
+  entry_stored.debug_checksum1 = sha256(&room_id[0], room_id.size());
+  entry_stored.debug_uint1     = std::strtoull (room_id.c_str(), NULL, 10);
 
-  auto entry_stored          = singleton_debug.get();
-  entry_stored.debug_string1 = entropy_hash;
+/*
+  if(_hash.to_string() == entropy_hash) {
+    entry_stored.debug_uint1 = 1;
+  } else {
+    entry_stored.debug_uint1 = 2;
+  }
+  */
+
   singleton_debug.set(entry_stored, get_self());
 }
 
